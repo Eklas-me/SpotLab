@@ -58,7 +58,7 @@ export class TradeEngine {
   }
   
   static async getWallet() {
-    return await Wallet.findOne();
+    return await Wallet.findOne().sort({ createdAt: 1 });
   }
 
   static async marketBuy(symbol, base, amountUSDT, stopLoss, takeProfit) {
@@ -74,15 +74,16 @@ export class TradeEngine {
     const fee = amountUSDT * TRADING_FEE_RATE;
     const totalCost = amountUSDT + fee;
 
+    const targetWallet = await this.getWallet();
+    if (!targetWallet) throw new Error('Wallet not found');
+
     const wallet = await Wallet.findOneAndUpdate(
-      { balance: { $gte: totalCost } },
+      { _id: targetWallet._id, balance: { $gte: totalCost } },
       { $inc: { balance: -totalCost } },
       { new: true }
     );
     if (!wallet) {
-      const currentWallet = await Wallet.findOne();
-      const currentBalance = currentWallet?.balance ?? 0;
-      throw new Error(`Insufficient balance. Need $${totalCost.toFixed(2)}, have $${currentBalance.toFixed(2)}`);
+      throw new Error(`Insufficient balance. Need $${totalCost.toFixed(2)}, have $${targetWallet.balance.toFixed(2)}`);
     }
 
     const quantity = amountUSDT / currentPrice;
@@ -112,7 +113,7 @@ export class TradeEngine {
   static async closePosition(positionId, currentPrice = null, reason = 'manual') {
     let pos = await Position.findById(positionId);
     if (!pos) throw new Error('Position not found');
-    let wallet = await Wallet.findOne();
+    let wallet = await this.getWallet();
     if (!wallet) throw new Error('Wallet not found');
 
     const exitPrice = currentPrice
@@ -180,8 +181,11 @@ export class TradeEngine {
     const fee = amountUSDT * TRADING_FEE_RATE;
     const totalCost = amountUSDT + fee;
 
+    const targetWallet = await this.getWallet();
+    if (!targetWallet) throw new Error('Wallet not found');
+
     const wallet = await Wallet.findOneAndUpdate(
-      { balance: { $gte: totalCost } },
+      { _id: targetWallet._id, balance: { $gte: totalCost } },
       { $inc: { balance: -totalCost } },
       { new: true }
     );
@@ -217,7 +221,7 @@ export class TradeEngine {
     if (!order) throw new Error('Order not found');
 
     // Refund funds
-    let wallet = await Wallet.findOne();
+    let wallet = await this.getWallet();
     if (!wallet) throw new Error('Wallet not found');
     wallet = await Wallet.findByIdAndUpdate(wallet._id, { $inc: { balance: order.totalCost } }, { new: true });
 
@@ -243,7 +247,7 @@ export class TradeEngine {
         takeProfit: deletedOrder.takeProfit,
       });
     } catch (err) {
-      const wallet = await Wallet.findOne();
+      const wallet = await this.getWallet();
       if (wallet) {
         await Wallet.findByIdAndUpdate(wallet._id, { $inc: { balance: deletedOrder.totalCost } });
       }
