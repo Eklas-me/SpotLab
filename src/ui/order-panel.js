@@ -127,7 +127,7 @@ function setupFormSubmit() {
     }
 
     let result;
-    const btnSubmit = document.getElementById('btn-submit');
+    const btnSubmit = document.getElementById('submit-btn');
     const originalText = btnSubmit.textContent;
     btnSubmit.disabled = true;
     btnSubmit.textContent = 'Processing...';
