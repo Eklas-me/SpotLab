@@ -12,7 +12,7 @@ COPY . .
 RUN npm run build
 
 # Production Stage (Backend + Frontend)
-FROM node:22-alpine
+FROM node:22
 
 WORKDIR /app
 
