@@ -11,9 +11,7 @@
   },
   "dependencies": {
     "lightweight-charts": "^4.2.1",
-    "socket.io-client": "^4.8.3"
-  },
-  "devDependencies": {
+    "socket.io-client": "^4.8.3",
     "vite": "^6.3.5"
   }
 }
