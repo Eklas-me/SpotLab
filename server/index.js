@@ -6,8 +6,13 @@ import { connectDB } from './config/db.js';
 import { BinanceMonitor } from './engine/BinanceMonitor.js';
 import apiRoutes from './routes/api.js';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const server = http.createServer(app);
@@ -29,6 +34,14 @@ app.use(express.json());
 
 // Routes
 app.use('/api', apiRoutes);
+
+// Serve Static Frontend (Production)
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('*', (req, res) => {
+  if (!req.path.startsWith('/api')) {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
+});
 
 // Socket.io Connection
 io.on('connection', (socket) => {

@@ -1,23 +1,32 @@
-# Build Stage
+# Build Stage (Frontend)
 FROM node:22-alpine AS build
 
 WORKDIR /app
 
-# Copy package.json and install all dependencies (including devDependencies)
+# Copy package.json and install frontend dependencies
 COPY package*.json ./
 RUN npm install
 
-# Copy source code and build
+# Copy source code and build frontend
 COPY . .
 RUN npm run build
 
-# Production Stage (Serve static files with Nginx)
-FROM nginx:alpine
+# Production Stage (Backend + Frontend)
+FROM node:22-alpine
 
-# Copy built files from the previous stage to Nginx
-COPY --from=build /app/dist /usr/share/nginx/html
+WORKDIR /app
 
-# Expose port 80
-EXPOSE 80
+# Copy backend files
+COPY server/package*.json ./
+RUN npm install --omit=dev
 
-CMD ["nginx", "-g", "daemon off;"]
+COPY server/ ./
+
+# Create public directory and copy frontend build
+RUN mkdir -p public
+COPY --from=build /app/dist ./public/
+
+# Expose backend port
+EXPOSE 5000
+
+CMD ["npm", "start"]
