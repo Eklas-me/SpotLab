@@ -1062,3 +1062,88 @@ body {
 .loading {
   animation: pulse 1.5s ease infinite;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE (MOBILE & TABLET)
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 992px) {
+  body {
+    overflow: visible;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .app-main {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .chart-section {
+    height: 50vh;
+    min-height: 400px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .order-section {
+    width: 100%;
+    border-left: none;
+    height: auto;
+  }
+
+  .bottom-section {
+    height: auto;
+    flex-shrink: 0;
+  }
+  
+  .bottom-panel {
+    overflow-x: auto;
+    padding-bottom: var(--space-xl);
+  }
+  
+  .data-table {
+    min-width: 800px;
+  }
+
+  .analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 0 var(--space-sm);
+  }
+  
+  .header-right .balance-item:not(:first-child),
+  .header-right .balance-divider {
+    display: none;
+  }
+  
+  .timeframe-selector {
+    max-width: 150px;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 2px;
+  }
+  
+  .timeframe-selector::-webkit-scrollbar {
+    height: 2px;
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .logo-text {
+    display: none; /* Hide text on very small screens, keep icon */
+  }
+  
+  .pair-btn {
+    padding: var(--space-xs) var(--space-sm);
+  }
+  
+  .header-left, .header-right {
+    gap: var(--space-sm);
+  }
+}
