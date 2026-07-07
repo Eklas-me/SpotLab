@@ -112,7 +112,7 @@ function setupFormInputs() {
 function setupFormSubmit() {
   const form = document.getElementById('order-form');
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const pair = getCurrentPair();
@@ -127,21 +127,32 @@ function setupFormSubmit() {
     }
 
     let result;
+    const btnSubmit = document.getElementById('btn-submit');
+    const originalText = btnSubmit.textContent;
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = 'Processing...';
 
     if (currentSide === 'sell') {
       showToast('info', 'Sell', 'To sell, close an open position from the Positions panel.');
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = originalText;
       return;
     }
 
     if (currentOrderType === 'market') {
-      result = tradingEngine.marketBuy(pair.symbol, amountUSDT, sl, tp);
+      result = await tradingEngine.marketBuy(pair.symbol, amountUSDT, sl, tp);
     } else {
       if (limitPrice <= 0) {
         showToast('warning', 'Invalid Price', 'Please enter a limit price.');
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = originalText;
         return;
       }
-      result = tradingEngine.placeLimitOrder(pair.symbol, limitPrice, amountUSDT, sl, tp);
+      result = await tradingEngine.placeLimitOrder(pair.symbol, limitPrice, amountUSDT, sl, tp);
     }
+
+    btnSubmit.disabled = false;
+    btnSubmit.textContent = originalText;
 
     if (result.success) {
       showToast('success', currentOrderType === 'market' ? 'Order Filled' : 'Order Placed', result.message);

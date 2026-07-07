@@ -49,10 +49,16 @@ function renderOrders() {
 
   // Cancel button handlers
   tbody.querySelectorAll('[data-action="cancel"]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const result = tradingEngine.cancelOrder(btn.dataset.id);
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      btn.textContent = '...';
+      const result = await tradingEngine.cancelOrder(btn.dataset.id);
       if (result.success) {
         showToast('info', 'Order Cancelled', result.message);
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Cancel';
+        showToast('error', 'Failed', result.message);
       }
     });
   });

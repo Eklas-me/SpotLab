@@ -84,13 +84,19 @@ function renderPositions() {
 
   // Close button handlers
   tbody.querySelectorAll('[data-action="close"]').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const id = btn.dataset.id;
-      const result = tradingEngine.closePosition(id, CLOSE_REASONS.MANUAL);
+      btn.disabled = true;
+      btn.textContent = 'Closing...';
+      const result = await tradingEngine.closePosition(id, CLOSE_REASONS.MANUAL);
       if (result.success) {
         showToast('info', 'Position Closed', `${result.trade.base} closed @ $${formatPrice(result.trade.exitPrice, 2)} | P&L: ${result.trade.pnl >= 0 ? '+' : ''}$${result.trade.pnl.toFixed(2)}`);
         chartManager.removeEntryLine(id);
         refreshBalance();
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Close';
+        showToast('error', 'Close Failed', result.message);
       }
     });
   });
