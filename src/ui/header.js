@@ -243,14 +243,19 @@ function setupResetButton() {
     if (e.target === modal) modal.style.display = 'none';
   });
 
-  confirmBtn.addEventListener('click', () => {
-    // Reset everything
-    wallet.reset();
-    positions.clearAll();
-    tradingEngine.resetAll();
+  confirmBtn.addEventListener('click', async () => {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Resetting...';
+
+    // Reset everything via backend API
+    await tradingEngine.resetAll();
+    
     chartManager.clearAllLines();
     modal.style.display = 'none';
     updateBalanceDisplay();
+    
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Reset Data';
   });
 }
 
