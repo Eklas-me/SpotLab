@@ -1,0 +1,19 @@
+{
+  "name": "spotlab",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Paper trading simulator with real-time crypto market data",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lightweight-charts": "^4.2.1",
+    "socket.io-client": "^4.8.3"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  }
+}

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="SpotLab — Practice crypto spot trading with virtual money. Real-time market data, SL/TP tracking, and analytics to measure your trading accuracy." />
+  <title>SpotLab — Paper Trading Simulator</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <!-- ═══════════════════════ HEADER ═══════════════════════ -->
+  <header id="app-header" class="app-header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">🔬</span>
+        <span class="logo-text">Spot<span class="logo-accent">Lab</span></span>
+      </div>
+      <div class="pair-selector" id="pair-selector">
+        <button class="pair-btn" id="pair-btn">
+          <span class="pair-name" id="pair-name">BTC/USDT</span>
+          <span class="pair-price" id="pair-live-price">--</span>
+          <span class="pair-change" id="pair-change">--%</span>
+          <svg class="chevron-icon" viewBox="0 0 24 24" width="16" height="16"><path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        </button>
+        <div class="pair-dropdown" id="pair-dropdown"></div>
+      </div>
+      <div class="timeframe-selector" id="timeframe-selector">
+        <button class="tf-btn active" data-tf="1m">1m</button>
+        <button class="tf-btn" data-tf="5m">5m</button>
+        <button class="tf-btn" data-tf="15m">15m</button>
+        <button class="tf-btn" data-tf="1h">1h</button>
+        <button class="tf-btn" data-tf="4h">4h</button>
+        <button class="tf-btn" data-tf="1d">1D</button>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="balance-group">
+        <div class="balance-item">
+          <span class="balance-label">Balance</span>
+          <span class="balance-value" id="balance-value">$10,000.00</span>
+        </div>
+        <div class="balance-divider"></div>
+        <div class="balance-item">
+          <span class="balance-label">Portfolio</span>
+          <span class="balance-value" id="portfolio-value">$10,000.00</span>
+        </div>
+        <div class="balance-divider"></div>
+        <div class="balance-item">
+          <span class="balance-label">P&L</span>
+          <span class="balance-value pnl-neutral" id="pnl-value">$0.00 (0.00%)</span>
+        </div>
+      </div>
+      <button class="reset-btn" id="reset-btn" title="Reset Account">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════ MAIN CONTENT ═══════════════════════ -->
+  <main id="app-main" class="app-main">
+    <!-- ─────── CHART AREA ─────── -->
+    <section class="chart-section" id="chart-section">
+      <div class="chart-container" id="chart-container"></div>
+    </section>
+
+    <!-- ─────── ORDER PANEL (Right Sidebar) ─────── -->
+    <aside class="order-section" id="order-section">
+      <!-- Order Type Tabs -->
+      <div class="order-tabs">
+        <button class="order-tab active" data-type="market" id="tab-market">Market</button>
+        <button class="order-tab" data-type="limit" id="tab-limit">Limit</button>
+      </div>
+
+      <!-- Buy / Sell Toggle -->
+      <div class="side-toggle" id="side-toggle">
+        <button class="side-btn side-buy active" data-side="buy" id="btn-buy">Buy</button>
+        <button class="side-btn side-sell" data-side="sell" id="btn-sell">Sell</button>
+      </div>
+
+      <!-- Order Form -->
+      <form class="order-form" id="order-form" autocomplete="off">
+        <!-- Limit Price (hidden for market orders) -->
+        <div class="form-group" id="limit-price-group" style="display: none;">
+          <label class="form-label">Price (USDT)</label>
+          <div class="input-wrapper">
+            <input type="number" class="form-input" id="input-limit-price" placeholder="0.00" step="any" />
+          </div>
+        </div>
+
+        <!-- Amount -->
+        <div class="form-group">
+          <label class="form-label">Amount (USDT)</label>
+          <div class="input-wrapper">
+            <input type="number" class="form-input" id="input-amount" placeholder="0.00" step="any" />
+            <div class="amount-shortcuts">
+              <button type="button" class="shortcut-btn" data-pct="25">25%</button>
+              <button type="button" class="shortcut-btn" data-pct="50">50%</button>
+              <button type="button" class="shortcut-btn" data-pct="75">75%</button>
+              <button type="button" class="shortcut-btn" data-pct="100">100%</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quantity Display -->
+        <div class="form-group qty-display">
+          <span class="qty-label">≈ Quantity</span>
+          <span class="qty-value" id="qty-display">0.00000</span>
+        </div>
+
+        <!-- Stop Loss -->
+        <div class="form-group">
+          <label class="form-label sl-label">
+            Stop Loss (USDT)
+            <span class="optional-tag">Optional</span>
+          </label>
+          <div class="input-wrapper">
+            <input type="number" class="form-input" id="input-sl" placeholder="0.00" step="any" />
+          </div>
+        </div>
+
+        <!-- Take Profit -->
+        <div class="form-group">
+          <label class="form-label tp-label">
+            Take Profit (USDT)
+            <span class="optional-tag">Optional</span>
+          </label>
+          <div class="input-wrapper">
+            <input type="number" class="form-input" id="input-tp" placeholder="0.00" step="any" />
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary" id="order-summary">
+          <div class="summary-row">
+            <span>Est. Fee (0.1%)</span>
+            <span id="est-fee">$0.00</span>
+          </div>
+          <div class="summary-row">
+            <span>Total Cost</span>
+            <span id="est-total">$0.00</span>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="submit-btn buy-btn" id="submit-btn">
+          Buy BTC
+        </button>
+      </form>
+
+      <!-- Available Balance in Order Panel -->
+      <div class="available-balance">
+        <span>Available</span>
+        <span id="available-balance">$10,000.00</span>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ═══════════════════════ BOTTOM PANEL ═══════════════════════ -->
+  <section class="bottom-section" id="bottom-section">
+    <!-- Bottom Tabs -->
+    <div class="bottom-tabs" id="bottom-tabs">
+      <button class="bottom-tab active" data-panel="positions" id="tab-positions">
+        Open Positions <span class="tab-badge" id="positions-count">0</span>
+      </button>
+      <button class="bottom-tab" data-panel="orders" id="tab-orders">
+        Open Orders <span class="tab-badge" id="orders-count">0</span>
+      </button>
+      <button class="bottom-tab" data-panel="history" id="tab-history">
+        Trade History
+      </button>
+      <button class="bottom-tab" data-panel="analytics" id="tab-analytics">
+        Analytics
+      </button>
+    </div>
+
+    <!-- Positions Panel -->
+    <div class="bottom-panel active" id="panel-positions">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Pair</th>
+            <th>Side</th>
+            <th>Qty</th>
+            <th>Entry Price</th>
+            <th>Mark Price</th>
+            <th>P&L</th>
+            <th>SL</th>
+            <th>TP</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="positions-body">
+          <tr class="empty-row"><td colspan="9">No open positions</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Open Orders Panel -->
+    <div class="bottom-panel" id="panel-orders">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Pair</th>
+            <th>Side</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Amount</th>
+            <th>Filled</th>
+            <th>Time</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="orders-body">
+          <tr class="empty-row"><td colspan="8">No open orders</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Trade History Panel -->
+    <div class="bottom-panel" id="panel-history">
+      <div class="history-filters" id="history-filters">
+        <select class="filter-select" id="filter-pair">
+          <option value="all">All Pairs</option>
+        </select>
+        <select class="filter-select" id="filter-result">
+          <option value="all">All Results</option>
+          <option value="profit">Profit</option>
+          <option value="loss">Loss</option>
+        </select>
+        <select class="filter-select" id="filter-close-reason">
+          <option value="all">All Reasons</option>
+          <option value="manual">Manual</option>
+          <option value="sl">Stop Loss</option>
+          <option value="tp">Take Profit</option>
+        </select>
+        <button class="export-btn" id="export-btn" title="Export Data">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor"/></svg>
+          Export
+        </button>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Pair</th>
+            <th>Side</th>
+            <th>Entry Price</th>
+            <th>Exit Price</th>
+            <th>Qty</th>
+            <th>P&L</th>
+            <th>Duration</th>
+            <th>Closed By</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody id="history-body">
+          <tr class="empty-row"><td colspan="10">No trade history yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Analytics Panel -->
+    <div class="bottom-panel" id="panel-analytics">
+      <div class="analytics-grid" id="analytics-grid">
+        <!-- Summary Cards -->
+        <div class="analytics-card">
+          <div class="card-icon">📊</div>
+          <div class="card-value" id="stat-total-trades">0</div>
+          <div class="card-label">Total Trades</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-icon">🎯</div>
+          <div class="card-value" id="stat-win-rate">0%</div>
+          <div class="card-label">Win Rate</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-icon">💰</div>
+          <div class="card-value" id="stat-total-pnl">$0.00</div>
+          <div class="card-label">Total P&L</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-icon">📈</div>
+          <div class="card-value" id="stat-avg-pnl">$0.00</div>
+          <div class="card-label">Avg P&L / Trade</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-icon">🛑</div>
+          <div class="card-value" id="stat-sl-hits">0</div>
+          <div class="card-label">SL Hits</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-icon">✅</div>
+          <div class="card-value" id="stat-tp-hits">0</div>
+          <div class="card-label">TP Hits</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-icon">⚖️</div>
+          <div class="card-value" id="stat-accuracy">0%</div>
+          <div class="card-label">SL/TP Accuracy</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-icon">🔥</div>
+          <div class="card-value" id="stat-streak">0</div>
+          <div class="card-label">Current Streak</div>
+        </div>
+        <div class="analytics-card highlight-green">
+          <div class="card-icon">🏆</div>
+          <div class="card-value" id="stat-best-trade">$0.00</div>
+          <div class="card-label">Best Trade</div>
+        </div>
+        <div class="analytics-card highlight-red">
+          <div class="card-icon">💀</div>
+          <div class="card-value" id="stat-worst-trade">$0.00</div>
+          <div class="card-label">Worst Trade</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-icon">⚡</div>
+          <div class="card-value" id="stat-avg-rr">0.00</div>
+          <div class="card-label">Avg Risk:Reward</div>
+        </div>
+        <div class="analytics-card">
+          <div class="card-icon">⏱️</div>
+          <div class="card-value" id="stat-avg-duration">--</div>
+          <div class="card-label">Avg Duration</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ TOAST CONTAINER ═══════════════════════ -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ═══════════════════════ RESET MODAL ═══════════════════════ -->
+  <div class="modal-overlay" id="reset-modal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-icon">⚠️</div>
+      <h3 class="modal-title">Reset Account?</h3>
+      <p class="modal-desc">This will reset your balance to $10,000 and clear all positions, orders, and trade history. This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="modal-btn modal-cancel" id="reset-cancel">Cancel</button>
+        <button class="modal-btn modal-confirm" id="reset-confirm">Reset Everything</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
