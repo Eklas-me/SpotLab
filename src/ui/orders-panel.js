@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 import { TRADING_PAIRS } from '../utils/constants.js';
-import { formatPrice, formatQty, formatUSD, formatDateTime } from '../utils/formatters.js';
+import { escapeHTML, formatPrice, formatQty, formatUSD, formatDateTime } from '../utils/formatters.js';
 import { tradingEngine } from '../core/trading.js';
 import { showToast } from './toast.js';
 
@@ -31,9 +31,11 @@ function renderOrders() {
 
   tbody.innerHTML = orders.map((order) => {
     const pair = TRADING_PAIRS.find((p) => p.symbol === order.symbol);
+    const id = escapeHTML(order.id);
+    const base = escapeHTML(order.base);
     return `
       <tr>
-        <td style="font-weight: 600; color: var(--text-primary);">${order.base}/USDT</td>
+        <td style="font-weight: 600; color: var(--text-primary);">${base}/USDT</td>
         <td><span style="color: var(--color-buy); font-weight: 600;">BUY</span></td>
         <td>Limit</td>
         <td>${formatPrice(order.price, pair?.pricePrecision || 2)}</td>
@@ -41,7 +43,7 @@ function renderOrders() {
         <td>${formatQty(order.quantity, pair?.qtyPrecision || 5)}</td>
         <td style="color: var(--text-muted);">${formatDateTime(order.placedAt)}</td>
         <td>
-          <button class="table-btn cancel-btn" data-action="cancel" data-id="${order.id}">Cancel</button>
+          <button class="table-btn cancel-btn" data-action="cancel" data-id="${id}">Cancel</button>
         </td>
       </tr>
     `;

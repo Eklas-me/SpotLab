@@ -96,6 +96,19 @@ export function formatTime(timestamp) {
 }
 
 /**
+ * Escape text before interpolating into HTML templates.
+ */
+export function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  })[char]);
+}
+
+/**
  * Generate a unique ID
  */
 export function generateId() {

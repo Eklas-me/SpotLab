@@ -2,6 +2,8 @@
    SpotLab — Toast Notification System
    ═══════════════════════════════════════════════════════════ */
 
+import { escapeHTML } from '../utils/formatters.js';
+
 const ICONS = {
   success: '✅',
   error: '🛑',
@@ -41,8 +43,8 @@ export function showToast(type, title, message, duration) {
   toast.innerHTML = `
     <span class="toast-icon">${ICONS[type] || 'ℹ️'}</span>
     <div class="toast-content">
-      <div class="toast-title">${title}</div>
-      <div class="toast-message">${message}</div>
+      <div class="toast-title">${escapeHTML(title)}</div>
+      <div class="toast-message">${escapeHTML(message)}</div>
     </div>
     <button class="toast-close" aria-label="Close">&times;</button>
   `;

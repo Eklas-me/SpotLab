@@ -73,7 +73,7 @@ class BinanceWebSocket {
     this._reconnectDelay = 2000;
 
     const streams = `${this._currentSymbol}@kline_${interval}/${this._currentSymbol}@miniTicker`;
-    const url = `${BINANCE_WS_BASE}/${streams}`;
+    const url = `${BINANCE_WS_BASE.replace('/ws', '/stream')}?streams=${streams}`;
 
     console.log(`[WS] Connecting: ${url}`);
     this._ws = new WebSocket(url);
@@ -87,7 +87,7 @@ class BinanceWebSocket {
     this._ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-        this._handleMessage(msg);
+        this._handleMessage(msg.data || msg);
       } catch (e) {
         console.error('[WS] Parse error:', e);
       }

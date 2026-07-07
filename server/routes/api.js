@@ -50,8 +50,8 @@ router.get('/history', async (req, res) => {
 // POST Market Buy
 router.post('/trade/market', async (req, res) => {
   try {
-    const { symbol, base, amountUSDT, currentPrice, stopLoss, takeProfit } = req.body;
-    const result = await TradeEngine.marketBuy(symbol, base, amountUSDT, currentPrice, stopLoss, takeProfit);
+    const { symbol, base, amountUSDT, stopLoss, takeProfit } = req.body;
+    const result = await TradeEngine.marketBuy(symbol, base, amountUSDT, stopLoss, takeProfit);
     
     // Notify monitor to track this symbol if not already tracking
     if (req.app.locals.monitor) {
@@ -83,8 +83,7 @@ router.post('/trade/limit', async (req, res) => {
 // POST Close Position (Manual)
 router.post('/trade/close/:id', async (req, res) => {
   try {
-    const { currentPrice } = req.body;
-    const result = await TradeEngine.closePosition(req.params.id, currentPrice, 'manual');
+    const result = await TradeEngine.closePosition(req.params.id, null, 'manual');
     res.json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });

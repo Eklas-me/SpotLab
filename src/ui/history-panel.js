@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 import { TRADING_PAIRS, CLOSE_REASONS } from '../utils/constants.js';
-import { formatPrice, formatQty, formatUSD, formatPnL, formatDuration, formatDateTime } from '../utils/formatters.js';
+import { escapeHTML, formatPrice, formatQty, formatUSD, formatPnL, formatDuration, formatDateTime } from '../utils/formatters.js';
 import { tradingEngine } from '../core/trading.js';
 
 const CLOSE_REASON_LABELS = {
@@ -55,19 +55,21 @@ function renderHistory() {
 
   tbody.innerHTML = trades.map((trade, idx) => {
     const pair = TRADING_PAIRS.find((p) => p.symbol === trade.symbol);
+    const base = escapeHTML(trade.base);
+    const closeReason = escapeHTML(CLOSE_REASON_LABELS[trade.closeReason] || trade.closeReason);
     const pnlFormatted = formatPnL(trade.pnl);
 
     return `
       <tr>
         <td style="color: var(--text-muted);">${trades.length - idx}</td>
-        <td style="font-weight: 600; color: var(--text-primary);">${trade.base}/USDT</td>
+        <td style="font-weight: 600; color: var(--text-primary);">${base}/USDT</td>
         <td><span style="color: var(--color-buy); font-weight: 600;">BUY</span></td>
         <td>${formatPrice(trade.entryPrice, pair?.pricePrecision || 2)}</td>
         <td>${formatPrice(trade.exitPrice, pair?.pricePrecision || 2)}</td>
         <td>${formatQty(trade.quantity, pair?.qtyPrecision || 5)}</td>
         <td class="${pnlFormatted.class}" style="font-weight: 600;">${pnlFormatted.text}</td>
         <td>${formatDuration(trade.duration)}</td>
-        <td>${CLOSE_REASON_LABELS[trade.closeReason] || trade.closeReason}</td>
+        <td>${closeReason}</td>
         <td style="color: var(--text-muted);">${formatDateTime(trade.closedAt)}</td>
       </tr>
     `;
@@ -85,7 +87,7 @@ function updatePairFilter() {
   select.innerHTML = '<option value="all">All Pairs</option>';
   symbols.forEach((symbol) => {
     const pair = TRADING_PAIRS.find((p) => p.symbol === symbol);
-    select.innerHTML += `<option value="${symbol}">${pair?.base || symbol}/USDT</option>`;
+    select.innerHTML += `<option value="${escapeHTML(symbol)}">${escapeHTML(pair?.base || symbol)}/USDT</option>`;
   });
 
   select.value = currentValue || 'all';

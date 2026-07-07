@@ -289,7 +289,26 @@ body {
 .tf-btn.active {
   background: var(--accent-primary);
   color: white;
-  box-shadow: 0 0 8px var(--accent-glow);
+  border-color: var(--accent-primary);
+}
+.tf-select-mobile {
+  display: none;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: var(--space-xs) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5" stroke="%2394a3b8" stroke-width="2" fill="none" stroke-linecap="round"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right var(--space-xs) center;
+  padding-right: 28px;
 }
 
 /* Balance Group */
@@ -1118,22 +1137,47 @@ body {
 
 @media (max-width: 768px) {
   .app-header {
-    padding: 0 var(--space-sm);
+    padding: var(--space-sm);
+    flex-direction: column;
+    height: auto;
+    gap: var(--space-sm);
   }
   
-  .header-right .balance-item:not(:first-child),
-  .header-right .balance-divider {
-    display: none;
+  .header-left, .header-right {
+    width: 100%;
+    justify-content: space-between;
+    gap: var(--space-xs);
+  }
+
+  .header-right {
+    overflow-x: auto;
+    padding-bottom: var(--space-xs);
+  }
+  
+  .balance-group {
+    flex-wrap: nowrap;
+    gap: var(--space-md);
+  }
+
+  .balance-item, .reset-btn {
+    flex-shrink: 0;
   }
   
   .timeframe-selector {
-    max-width: 150px;
-    overflow-x: auto;
-    white-space: nowrap;
-    padding-bottom: 2px;
+    max-width: none;
+    overflow-x: visible;
+    padding-bottom: 0;
   }
   
-  .timeframe-selector::-webkit-scrollbar {
+  .timeframe-selector .tf-btn {
+    display: none;
+  }
+  
+  .tf-select-mobile {
+    display: block;
+  }
+  
+  .header-right::-webkit-scrollbar {
     height: 2px;
   }
 
@@ -1142,14 +1186,10 @@ body {
   }
   
   .logo-text {
-    display: none; /* Hide text on very small screens, keep icon */
+    display: none;
   }
   
   .pair-btn {
     padding: var(--space-xs) var(--space-sm);
-  }
-  
-  .header-left, .header-right {
-    gap: var(--space-sm);
   }
 }

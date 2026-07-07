@@ -200,6 +200,8 @@ function updatePairChange(percent) {
 
 function setupTimeframeSelector() {
   const selector = document.getElementById('timeframe-selector');
+  const mobileSelect = document.getElementById('tf-select-mobile');
+
   selector.querySelectorAll('.tf-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const tf = TIMEFRAMES.find((t) => t.value === btn.dataset.tf);
@@ -209,11 +211,31 @@ function setupTimeframeSelector() {
         // Update active state
         selector.querySelectorAll('.tf-btn').forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
+        
+        // Sync mobile dropdown
+        if(mobileSelect) mobileSelect.value = tf.value;
 
         if (onTimeframeChange) onTimeframeChange(tf);
       }
     });
   });
+
+  if (mobileSelect) {
+    mobileSelect.addEventListener('change', (e) => {
+      const tfValue = e.target.value;
+      const tf = TIMEFRAMES.find((t) => t.value === tfValue);
+      if (tf && tf.value !== currentTimeframe.value) {
+        currentTimeframe = tf;
+
+        // Update active state of buttons to stay synced
+        selector.querySelectorAll('.tf-btn').forEach((b) => {
+          b.classList.toggle('active', b.dataset.tf === tfValue);
+        });
+
+        if (onTimeframeChange) onTimeframeChange(tf);
+      }
+    });
+  }
 }
 
 // ─────── Balance Display ───────

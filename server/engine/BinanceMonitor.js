@@ -44,6 +44,8 @@ export class BinanceMonitor {
       if (this.ws) {
         // Reconnect to subscribe to new streams
         this.ws.close();
+      } else {
+        this.connect();
       }
     }
   }
@@ -52,9 +54,10 @@ export class BinanceMonitor {
     if (this.activeSymbols.size === 0) return; // Nothing to monitor
 
     const streams = Array.from(this.activeSymbols).map(s => `${s}@miniTicker`).join('/');
-    const url = `wss://stream.binance.com:9443/ws/${streams}`;
+    const url = `wss://stream.binance.com:9443/stream?streams=${streams}`;
     
     this.ws = new WebSocket(url);
+    const currentWs = this.ws;
 
     this.ws.on('open', () => {
       console.log('[Monitor] Connected to Binance WS');
@@ -63,7 +66,8 @@ export class BinanceMonitor {
 
     this.ws.on('message', async (data) => {
       try {
-        const msg = JSON.parse(data);
+        const payload = JSON.parse(data);
+        const msg = payload.data || payload;
         if (msg.e === '24hrMiniTicker') {
           const symbol = msg.s; // e.g., 'BTCUSDT'
           const price = parseFloat(msg.c);
@@ -78,6 +82,13 @@ export class BinanceMonitor {
     });
 
     this.ws.on('close', () => {
+      if (this.ws === currentWs) {
+        this.ws = null;
+      }
+      if (this.activeSymbols.size === 0) {
+        return;
+      }
+
       console.log(`[Monitor] Disconnected. Reconnecting in ${this.reconnectDelay}ms...`);
       setTimeout(() => this.connect(), this.reconnectDelay);
       this.reconnectDelay = Math.min(this.reconnectDelay * 1.5, 30000);

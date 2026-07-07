@@ -112,9 +112,6 @@ class TradingEngine {
   // ─────── API ACTIONS ───────
 
   async marketBuy(symbol, amountUSDT, stopLoss = null, takeProfit = null) {
-    const currentPrice = this._priceCache[symbol];
-    if (!currentPrice) return { success: false, message: 'Price not available' };
-
     try {
       const res = await fetch(`${API_BASE}/trade/market`, {
         method: 'POST',
@@ -123,7 +120,6 @@ class TradingEngine {
           symbol, 
           base: symbol.replace('USDT', ''), 
           amountUSDT, 
-          currentPrice, 
           stopLoss, 
           takeProfit 
         })
@@ -143,13 +139,10 @@ class TradingEngine {
     const pos = positions.all.find(p => p.id === positionId);
     if (!pos) return { success: false, message: 'Position not found' };
     
-    const currentPrice = this._priceCache[pos.symbol] || pos.entryPrice;
-
     try {
       const res = await fetch(`${API_BASE}/trade/close/${positionId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPrice })
+        headers: { 'Content-Type': 'application/json' }
       });
       
       const data = await res.json();

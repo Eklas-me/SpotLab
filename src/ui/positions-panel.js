@@ -3,7 +3,7 @@
    Open positions list with real-time P&L
    ═══════════════════════════════════════════════════════════ */
 
-import { formatPrice, formatQty, formatUSD, formatPnL } from '../utils/formatters.js';
+import { escapeHTML, formatPrice, formatQty, formatUSD, formatPnL } from '../utils/formatters.js';
 import { positions } from '../core/positions.js';
 import { tradingEngine } from '../core/trading.js';
 import { binanceWS } from '../api/binance-ws.js';
@@ -13,6 +13,10 @@ import { refreshBalance } from './header.js';
 import { TRADING_PAIRS, CLOSE_REASONS } from '../utils/constants.js';
 
 let updateInterval = null;
+
+function cssEscape(value) {
+  return globalThis.CSS?.escape ? CSS.escape(String(value)) : String(value).replace(/["\\]/g, '\\$&');
+}
 
 /**
  * Initialize positions panel
@@ -61,22 +65,25 @@ function renderPositions() {
 
   tbody.innerHTML = allPositions.map((pos) => {
     const pair = TRADING_PAIRS.find((p) => p.symbol === pos.symbol);
+    const id = escapeHTML(pos.id);
+    const symbol = escapeHTML(pos.symbol);
+    const base = escapeHTML(pos.base);
     const currentPrice = tradingEngine.getPrice(pos.symbol) || pos.entryPrice;
     const { pnl, pnlPercent } = positions.calcPnL(pos, currentPrice);
     const pnlFormatted = formatPnL(pnl);
 
     return `
-      <tr data-position-id="${pos.id}">
-        <td style="font-weight: 600; color: var(--text-primary);">${pos.base}/USDT</td>
+      <tr data-position-id="${id}">
+        <td style="font-weight: 600; color: var(--text-primary);">${base}/USDT</td>
         <td><span style="color: var(--color-buy); font-weight: 600;">BUY</span></td>
         <td>${formatQty(pos.quantity, pair?.qtyPrecision || 5)}</td>
         <td>${formatPrice(pos.entryPrice, pair?.pricePrecision || 2)}</td>
-        <td class="mark-price" data-symbol="${pos.symbol}">${formatPrice(currentPrice, pair?.pricePrecision || 2)}</td>
-        <td class="live-pnl ${pnlFormatted.class}" data-position-id="${pos.id}">${pnlFormatted.text} (${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(2)}%)</td>
+        <td class="mark-price" data-symbol="${symbol}">${formatPrice(currentPrice, pair?.pricePrecision || 2)}</td>
+        <td class="live-pnl ${pnlFormatted.class}" data-position-id="${id}">${pnlFormatted.text} (${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(2)}%)</td>
         <td style="color: var(--color-sell);">${pos.stopLoss ? formatPrice(pos.stopLoss, pair?.pricePrecision || 2) : '—'}</td>
         <td style="color: var(--color-buy);">${pos.takeProfit ? formatPrice(pos.takeProfit, pair?.pricePrecision || 2) : '—'}</td>
         <td>
-          <button class="table-btn close-btn" data-action="close" data-id="${pos.id}">Close</button>
+          <button class="table-btn close-btn" data-action="close" data-id="${id}">Close</button>
         </td>
       </tr>
     `;
@@ -111,13 +118,13 @@ function updateLivePnL() {
     const pnlFormatted = formatPnL(pnl);
 
     // Update mark price
-    const markEls = document.querySelectorAll(`.mark-price[data-symbol="${pos.symbol}"]`);
+    const markEls = document.querySelectorAll(`.mark-price[data-symbol="${cssEscape(pos.symbol)}"]`);
     markEls.forEach((el) => {
       el.textContent = formatPrice(currentPrice, pair?.pricePrecision || 2);
     });
 
     // Update P&L
-    const pnlEl = document.querySelector(`.live-pnl[data-position-id="${pos.id}"]`);
+    const pnlEl = document.querySelector(`.live-pnl[data-position-id="${cssEscape(pos.id)}"]`);
     if (pnlEl) {
       pnlEl.textContent = `${pnlFormatted.text} (${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(2)}%)`;
       pnlEl.className = `live-pnl ${pnlFormatted.class}`;
