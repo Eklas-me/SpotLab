@@ -130,11 +130,14 @@ class BinanceWebSocket {
     // Mini ticker (for current price)
     if (msg.e === '24hrMiniTicker') {
       const price = parseFloat(msg.c);
+      const open = parseFloat(msg.o);
+      const changePercent = open > 0 ? ((price - open) / open) * 100 : 0;
       this._lastPrice = price;
       this._emit('ticker', {
         symbol: msg.s,
         price: price,
-        open: parseFloat(msg.o),
+        changePercent: changePercent,
+        open: open,
         high: parseFloat(msg.h),
         low: parseFloat(msg.l),
         volume: parseFloat(msg.v),

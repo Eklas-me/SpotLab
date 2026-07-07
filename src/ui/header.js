@@ -37,7 +37,12 @@ export function initHeader({ onPairChanged, onTimeframeChanged }) {
 
   // Update header price on WebSocket ticks
   binanceWS.on('ticker', (data) => {
-    updatePairPrice(data.price);
+    if (data.symbol === currentPair.symbol) {
+      updatePairPrice(data.price);
+      if (data.changePercent !== undefined) {
+        updatePairChange(data.changePercent);
+      }
+    }
     tickerCache[data.symbol] = data;
   });
 
@@ -119,9 +124,18 @@ function selectPair(pair) {
 
   // Update pair name in header
   document.getElementById('pair-name').textContent = `${pair.base}/${pair.quote}`;
-  document.getElementById('pair-live-price').textContent = '--';
-  document.getElementById('pair-change').textContent = '--%';
-  document.getElementById('pair-change').className = 'pair-change';
+  
+  const cached = tickerCache[pair.symbol];
+  if (cached) {
+    updatePairPrice(cached.price || cached.lastPrice);
+    if (cached.changePercent !== undefined || cached.priceChangePercent !== undefined) {
+      updatePairChange(cached.changePercent !== undefined ? cached.changePercent : cached.priceChangePercent);
+    }
+  } else {
+    document.getElementById('pair-live-price').textContent = '--';
+    document.getElementById('pair-change').textContent = '--%';
+    document.getElementById('pair-change').className = 'pair-change';
+  }
 
   // Update dropdown active state
   document.querySelectorAll('.pair-dropdown-item').forEach((el) => {
