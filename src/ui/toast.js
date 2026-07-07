@@ -64,7 +64,9 @@ export function showToast(type, title, message, duration) {
 function dismissToast(toast) {
   if (!toast || toast.classList.contains('removing')) return;
   toast.classList.add('removing');
-  toast.addEventListener('animationend', () => {
+  
+  // Use timeout instead of animationend for better browser compatibility
+  setTimeout(() => {
     toast.remove();
-  });
+  }, 300);
 }
