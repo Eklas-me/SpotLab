@@ -1,7 +1,7 @@
 import { io } from 'socket.io-client';
 
 const isDev = window.location.hostname === 'localhost' && window.location.port === '5173';
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || (isDev ? 'http://localhost:5000' : window.location.origin);
+const SOCKET_URL = isDev ? 'http://localhost:5000' : window.location.origin;
 
 export const socket = io(SOCKET_URL);
 
