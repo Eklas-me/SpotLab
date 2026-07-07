@@ -26,7 +26,8 @@ COPY server/ ./
 RUN mkdir -p public
 COPY --from=build /app/dist ./public/
 
-# Expose backend port
-EXPOSE 5000
+# Set port to 80 so Coolify routes correctly
+ENV PORT=80
+EXPOSE 80
 
 CMD ["npm", "start"]
