@@ -30,7 +30,7 @@ export const TIMEFRAMES = [
 export const BINANCE_WS_BASE = 'wss://stream.binance.com:9443/ws';
 export const BINANCE_REST_BASE = 'https://api.binance.com';
 
-export const API_BASE = 'http://localhost:5000/api';
+export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api';
 
 export const STORAGE_KEYS = {
   WALLET: 'spotlab_wallet',
